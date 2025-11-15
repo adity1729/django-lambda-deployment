@@ -72,6 +72,11 @@ docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:latest
 
 ### Step 3: Create IAM Role for Lambda
 
+- If you want to use exisiting role arn use this 
+```bash
+ROLE_ARN="arn:aws:iam::123456789012:role/your-existing-lambda-role"
+```
+
 ```bash
 # Create trust policy file
 cat > trust-policy.json << EOF
