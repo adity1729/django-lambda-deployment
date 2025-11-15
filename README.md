@@ -39,6 +39,13 @@ export LAMBDA_FUNCTION="django-serverless"
 export IAM_ROLE="lambda-django-role"
 ```
 
+### 3. Run Setup Script
+
+```bash
+chmod +x deploy.sh
+./deploy.sh
+```
+
 ## 📦 Manual Deployment
 
 ### Step 1: Create ECR Repository
@@ -367,6 +374,302 @@ django-serverless/
 6. Implement **API Gateway authentication** for production APIs
 7. Use **AWS Secrets Manager** for sensitive data
 
+## 🛠️ Useful Commands
+
+### ECR (Elastic Container Registry) Commands
+
+```bash
+# List all ECR repositories
+aws ecr describe-repositories --region $AWS_REGION
+
+# List all ECR repositories (table format)
+aws ecr describe-repositories --region $AWS_REGION --output table
+
+# Get specific repository details
+aws ecr describe-repositories \
+    --repository-names $ECR_REPO \
+    --region $AWS_REGION
+
+# List all images in a repository
+aws ecr describe-images \
+    --repository-name $ECR_REPO \
+    --region $AWS_REGION
+
+# List image tags only
+aws ecr list-images \
+    --repository-name $ECR_REPO \
+    --region $AWS_REGION
+
+# Get image details with digest
+aws ecr describe-images \
+    --repository-name $ECR_REPO \
+    --image-ids imageTag=latest \
+    --region $AWS_REGION
+
+# Delete an image by tag
+aws ecr batch-delete-image \
+    --repository-name $ECR_REPO \
+    --image-ids imageTag=old-tag \
+    --region $AWS_REGION
+
+# Delete ECR repository (including all images)
+aws ecr delete-repository \
+    --repository-name $ECR_REPO \
+    --force \
+    --region $AWS_REGION
+```
+
+### Lambda Function Commands
+
+```bash
+# List all Lambda functions
+aws lambda list-functions --region $AWS_REGION
+
+# Get Lambda function details
+aws lambda get-function \
+    --function-name $LAMBDA_FUNCTION \
+    --region $AWS_REGION
+
+# Get Lambda function configuration only
+aws lambda get-function-configuration \
+    --function-name $LAMBDA_FUNCTION \
+    --region $AWS_REGION
+
+# Check Lambda function status
+aws lambda get-function \
+    --function-name $LAMBDA_FUNCTION \
+    --region $AWS_REGION \
+    --query 'Configuration.LastUpdateStatus' \
+    --output text
+
+# Invoke Lambda function directly
+aws lambda invoke \
+    --function-name $LAMBDA_FUNCTION \
+    --region $AWS_REGION \
+    response.json
+
+cat response.json
+
+# Update Lambda environment variables
+aws lambda update-function-configuration \
+    --function-name $LAMBDA_FUNCTION \
+    --environment Variables="{DJANGO_SETTINGS_MODULE=config.settings,DEBUG=False}" \
+    --region $AWS_REGION
+
+# Update Lambda timeout
+aws lambda update-function-configuration \
+    --function-name $LAMBDA_FUNCTION \
+    --timeout 60 \
+    --region $AWS_REGION
+
+# Update Lambda memory
+aws lambda update-function-configuration \
+    --function-name $LAMBDA_FUNCTION \
+    --memory-size 1024 \
+    --region $AWS_REGION
+
+# Delete Lambda function
+aws lambda delete-function \
+    --function-name $LAMBDA_FUNCTION \
+    --region $AWS_REGION
+```
+
+### API Gateway Commands
+
+```bash
+# List all APIs
+aws apigatewayv2 get-apis --region $AWS_REGION
+
+# List APIs in table format
+aws apigatewayv2 get-apis --region $AWS_REGION --output table
+
+# Get specific API details
+aws apigatewayv2 get-api \
+    --api-id <API_ID> \
+    --region $AWS_REGION
+
+# Get API endpoint URL
+aws apigatewayv2 get-apis \
+    --region $AWS_REGION \
+    --query "Items[?Name=='django-api'].ApiEndpoint" \
+    --output text
+
+# Get API ID
+aws apigatewayv2 get-apis \
+    --region $AWS_REGION \
+    --query "Items[?Name=='django-api'].ApiId" \
+    --output text
+
+# Delete API Gateway
+export API_ID=$(aws apigatewayv2 get-apis \
+    --region $AWS_REGION \
+    --query "Items[?Name=='django-api'].ApiId" \
+    --output text)
+
+aws apigatewayv2 delete-api \
+    --api-id $API_ID \
+    --region $AWS_REGION
+```
+
+### IAM Role Commands
+
+```bash
+# List all IAM roles
+aws iam list-roles --query 'Roles[*].[RoleName,Arn]' --output table
+
+# Get specific role details
+aws iam get-role --role-name $IAM_ROLE
+
+# Get role ARN
+aws iam get-role \
+    --role-name $IAM_ROLE \
+    --query 'Role.Arn' \
+    --output text
+
+# List policies attached to role
+aws iam list-attached-role-policies --role-name $IAM_ROLE
+
+# Detach policy from role
+aws iam detach-role-policy \
+    --role-name $IAM_ROLE \
+    --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+# Delete IAM role (must detach all policies first)
+aws iam delete-role --role-name $IAM_ROLE
+```
+
+### Docker Commands
+
+```bash
+# List local Docker images
+docker images
+
+# List Docker images for specific repository
+docker images | grep $ECR_REPO
+
+# Remove Docker image
+docker rmi $ECR_REPO:latest
+
+# Remove Docker image by ID
+docker rmi <IMAGE_ID>
+
+# Remove all unused Docker images
+docker image prune -a
+
+# Check Docker buildx builders
+docker buildx ls
+
+# Create new buildx builder
+docker buildx create --use
+
+# Build for multiple platforms
+docker buildx build \
+    --platform linux/amd64,linux/arm64 \
+    -t $ECR_REPO:latest \
+    .
+
+# View Docker image details
+docker inspect $ECR_REPO:latest
+
+# Check image size
+docker images $ECR_REPO:latest --format "{{.Size}}"
+```
+
+### AWS Account & Region Commands
+
+```bash
+# Get AWS account ID
+aws sts get-caller-identity --query Account --output text
+
+# Get current AWS region
+aws configure get region
+
+# Get all configured settings
+aws configure list
+
+# Check who you are authenticated as
+aws sts get-caller-identity
+
+# List all available regions
+aws ec2 describe-regions --output table
+
+# Set default region
+aws configure set region us-east-1
+```
+
+### Testing & Debugging Commands
+
+```bash
+# Test API endpoint
+curl $API_ENDPOINT/api/hello/
+
+# Test with verbose output
+curl -v $API_ENDPOINT/api/hello/
+
+# Test with headers
+curl -H "Content-Type: application/json" $API_ENDPOINT/api/hello/
+
+# Test POST request
+curl -X POST $API_ENDPOINT/api/endpoint/ \
+    -H "Content-Type: application/json" \
+    -d '{"key":"value"}'
+
+# Check if Docker daemon is running
+docker ps
+
+# Check Lambda function permissions
+aws lambda get-policy \
+    --function-name $LAMBDA_FUNCTION \
+    --region $AWS_REGION
+
+# Validate IAM policy
+aws iam get-role-policy \
+    --role-name $IAM_ROLE \
+    --policy-name policy-name
+```
+
+### Cleanup Commands
+
+```bash
+# Complete cleanup script
+# WARNING: This will delete all resources!
+
+# Delete API Gateway
+export API_ID=$(aws apigatewayv2 get-apis \
+    --region $AWS_REGION \
+    --query "Items[?Name=='django-api'].ApiId" \
+    --output text)
+aws apigatewayv2 delete-api --api-id $API_ID --region $AWS_REGION
+
+# Delete Lambda function
+aws lambda delete-function \
+    --function-name $LAMBDA_FUNCTION \
+    --region $AWS_REGION
+
+# Delete ECR repository with all images
+aws ecr delete-repository \
+    --repository-name $ECR_REPO \
+    --force \
+    --region $AWS_REGION
+
+# Detach policies from IAM role
+aws iam detach-role-policy \
+    --role-name $IAM_ROLE \
+    --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+aws iam detach-role-policy \
+    --role-name $IAM_ROLE \
+    --policy-arn arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+
+# Delete IAM role
+aws iam delete-role --role-name $IAM_ROLE
+
+# Delete local Docker images
+docker rmi $ECR_REPO:latest
+docker rmi $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:latest
+
+echo "✨ Cleanup complete!"
+```
 ## 📄 License
 
 MIT License - Feel free to use this in your projects!
