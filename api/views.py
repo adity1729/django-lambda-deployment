@@ -69,7 +69,7 @@ async def hello_async(request):
     await asyncio.sleep(0.1)
     
     return JsonResponse({
-        'message': 'Hello from Serverless Django!',
+        'message': 'Hello from Django!',
         'async': True,
         'status': 'success'
     })
