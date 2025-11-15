@@ -131,7 +131,7 @@ aws lambda create-function \
     --role $ROLE_ARN \
     --timeout 30 \
     --memory-size 512 \
-    --environment Variables="{DJANGO_SETTINGS_MODULE=config.settings}"
+    --environment Variables="{DJANGO_SETTINGS_MODULE=CONFIG.settings}"
 ```
 
 > **Important Notes:**
