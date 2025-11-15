@@ -39,13 +39,6 @@ export LAMBDA_FUNCTION="django-serverless"
 export IAM_ROLE="lambda-django-role"
 ```
 
-### 3. Run Setup Script
-
-```bash
-chmod +x deploy.sh
-./deploy.sh
-```
-
 ## 📦 Manual Deployment
 
 ### Step 1: Create ECR Repository
