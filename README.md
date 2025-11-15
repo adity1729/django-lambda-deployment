@@ -76,7 +76,7 @@ docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:latest
 ```bash
 ROLE_ARN="arn:aws:iam::123456789012:role/your-existing-lambda-role"
 ```
-
+- For creating new role arn use this 
 ```bash
 # Create trust policy file
 cat > trust-policy.json << EOF
