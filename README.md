@@ -166,7 +166,8 @@ export API_ENDPOINT=$(aws apigatewayv2 get-apis \
 echo "🎉 Deployment Complete!"
 echo "API Endpoint: $API_ENDPOINT"
 ```
-
+> **Important Notes:**
+> - If you see unknown name in integrations section of api gatway for lambda funtion create the api gateway with prefilled values in the command 
 ### Step 6: Test Your Deployment
 
 ```bash
