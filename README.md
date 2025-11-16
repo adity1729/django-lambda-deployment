@@ -24,10 +24,15 @@ A complete guide to deploying Django applications to AWS Lambda using Docker con
 ### 1. Configure AWS CLI
 
 ```bash
+git clone https://github.com/adity1729/django-lambda-deployment.git
+```
+```bash
 aws configure
 ```
 
 Enter your AWS Access Key ID, Secret Access Key, and preferred region.
+> **Important Notes:**
+> In `lambda_handler.py` file you can uncomment the mangum code to use mangum instead of apig_wsgi (see commit `6a18276`)
 
 ### 2. Set Environment Variables
 
